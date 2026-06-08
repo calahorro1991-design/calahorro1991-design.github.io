@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alejandro Calahorro — QA Senior Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #7F77DD;
+    --purple-dark: #534AB7;
+    --purple-dim: rgba(83,74,183,0.15);
+    --green: #1D9E75;
+    --green-light: #5DCAA5;
+    --green-dim: rgba(29,158,117,0.12);
+    --amber: #EF9F27;
+    --amber-dim: rgba(186,117,23,0.12);
+    --bg: #07070f;
+    --bg2: #0d0d1f;
+    --bg3: #111128;
+    --border: rgba(127,119,221,0.18);
+    --border2: rgba(127,119,221,0.35);
+    --text: #e8e6ff;
+    --text2: #9d9bbf;
+    --text3: #5c5a7a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  #cursor {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--purple);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: transform 0.1s ease, border-color 0.2s;
+    transform: translate(-50%, -50%);
+  }
+  #cursor-dot {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    width: 4px; height: 4px;
+    background: var(--green-light);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+  body:has(a:hover) #cursor, body:has(button:hover) #cursor {
+    transform: translate(-50%, -50%) scale(2);
+    border-color: var(--green-light);
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.4;
+  }
+
+  /* SCANLINES */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(7,7,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--text); letter-spacing: 0.1em;
+  }
+  .nav-logo span { color: var(--purple); }
+  .nav-links { display: flex; gap: 1.5rem; }
+  .nav-links a {
+    font-size: 11px; color: var(--text3); letter-spacing: 0.15em;
+    text-decoration: none; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green-light); }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 7rem 2rem 4rem;
+    position: relative; overflow: hidden;
+  }
+
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 30% 50%, black 20%, transparent 70%);
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(83,74,183,0.12) 0%, transparent 70%);
+    top: 50%; left: -100px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .blink-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 10px var(--green);
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .eyebrow-txt {
+    font-size: 11px; color: var(--green-light);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+
+  .hero-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700; line-height: 0.9;
+    margin-bottom: 1rem;
+  }
+  .hero-name .line1 { color: var(--text); }
+  .hero-name .line2 { color: var(--purple); }
+
+  .hero-title {
+    font-size: 12px; color: var(--text2);
+    letter-spacing: 0.25em; margin-bottom: 2rem;
+    text-transform: uppercase;
+  }
+
+  /* TYPEWRITER */
+  #typewriter {
+    font-size: 14px; color: var(--green-light);
+    margin-bottom: 2.5rem; min-height: 22px;
+  }
+  #typewriter::after {
+    content: '█';
+    animation: blink 1s infinite;
+    margin-left: 2px;
+  }
+
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 3rem; }
+  .htag {
+    font-size: 10px; padding: 4px 12px; letter-spacing: 0.12em;
+    border-radius: 2px; border: 0.5px solid var(--purple-dark);
+    color: #CCC8F9; background: var(--purple-dim);
+    transition: all 0.2s; cursor: default;
+  }
+  .htag:hover { border-color: var(--purple); background: rgba(83,74,183,0.25); transform: translateY(-2px); }
+  .htag.g { border-color: rgba(29,158,117,0.5); color: var(--green-light); background: var(--green-dim); }
+  .htag.g:hover { border-color: var(--green); background: rgba(29,158,117,0.25); }
+  .htag.a { border-color: rgba(186,117,23,0.5); color: var(--amber); background: var(--amber-dim); }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 0.5px solid var(--border2); max-width: 500px;
+    animation: fadeUp 1s ease 0.5s both;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .hstat {
+    padding: 1rem; border-right: 0.5px solid var(--border);
+    transition: background 0.2s;
+  }
+  .hstat:last-child { border-right: none; }
+  .hstat:hover { background: var(--purple-dim); }
+  .hstat-n {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 2rem; font-weight: 700; color: var(--purple); line-height: 1;
+  }
+  .hstat-l { font-size: 9px; color: var(--text3); letter-spacing: 0.1em; margin-top: 3px; }
+
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: var(--text3); font-size: 9px; letter-spacing: 0.2em;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+  .scroll-arrow { width: 1px; height: 30px; background: linear-gradient(var(--purple), transparent); }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 960px; margin: 0 auto; }
+
+  .sec-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 2.5rem;
+  }
+  .sec-num { font-size: 11px; color: var(--purple); letter-spacing: 0.2em; }
+  .sec-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem; font-weight: 600; color: var(--text);
+    letter-spacing: 0.05em;
+  }
+  .sec-line { flex: 1; height: 0.5px; background: var(--border); }
+
+  /* ABOUT */
+  .about-box {
+    border: 0.5px solid var(--border);
+    padding: 2rem; background: var(--bg2);
+    font-size: 13px; line-height: 2; color: var(--text2);
+    position: relative; overflow: hidden;
+  }
+  .about-box::before {
+    content: '// PROFILE';
+    position: absolute; top: 1rem; right: 1rem;
+    font-size: 10px; color: var(--text3); letter-spacing: 0.15em;
+  }
+  .about-box strong { color: var(--green-light); font-weight: 400; }
+
+  /* EXPERIENCE */
+  .exp-item {
+    border: 0.5px solid var(--border);
+    padding: 1.5rem; background: var(--bg2);
+    margin-bottom: 2px; position: relative;
+    transition: border-color 0.3s, background 0.3s;
+    overflow: hidden;
+  }
+  .exp-item::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: var(--purple-dark);
+    transition: background 0.3s;
+  }
+  .exp-item:hover { border-color: var(--border2); background: var(--bg3); }
+  .exp-item:hover::before { background: var(--purple); }
+
+  .exp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; flex-wrap: wrap; gap: 6px; }
+  .exp-role {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.05rem; font-weight: 600; color: var(--text);
+  }
+  .exp-badge {
+    font-size: 9px; padding: 2px 8px; border-radius: 2px;
+    background: var(--purple-dim); color: #AFA9EC;
+    border: 0.5px solid var(--purple-dark); letter-spacing: 0.1em; margin-left: 8px;
+  }
+  .exp-dates { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; }
+  .exp-co { font-size: 11px; color: var(--green-light); margin-bottom: 1rem; }
+
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .bullets li {
+    font-size: 12px; color: var(--text2); line-height: 1.7;
+    padding-left: 16px; position: relative;
+  }
+  .bullets li::before {
+    content: '▸'; position: absolute; left: 0;
+    color: var(--purple); font-size: 10px; top: 3px;
+  }
+  .bullets li strong { color: var(--text); font-weight: 400; }
+  .new-pill {
+    display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 2px;
+    background: var(--green-dim); color: var(--green-light);
+    border: 0.5px solid var(--green); letter-spacing: 0.1em; margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* SKILLS */
+  .skills-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px;
+  }
+  .skill-group {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    padding: 1.25rem;
+  }
+  .sg-label {
+    font-size: 9px; letter-spacing: 0.2em; color: var(--text3);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .sk { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .sk-name { font-size: 11px; color: var(--text2); width: 110px; flex-shrink: 0; }
+  .sk-track { flex: 1; height: 2px; background: var(--border2); position: relative; }
+  .sk-fill {
+    height: 100%; background: var(--purple);
+    position: relative; overflow: hidden;
+    transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .sk-fill.g { background: var(--green); }
+  .sk-fill.a { background: #BA7517; }
+  .sk-fill::after {
+    content: '';
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 3px; background: white; opacity: 0.6;
+  }
+
+  /* TERMINAL WINDOW */
+  .terminal {
+    background: #050510; border: 0.5px solid var(--border2);
+    border-radius: 4px; overflow: hidden; margin-top: 2rem;
+  }
+  .terminal-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--bg2);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.r { background: #ff5f57; }
+  .term-dot.y { background: #febc2e; }
+  .term-dot.g { background: #28c840; }
+  .term-title { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; margin-left: 8px; }
+  .terminal-body { padding: 1.25rem; font-size: 12px; line-height: 2; }
+  .term-line { display: block; }
+  .term-prompt { color: var(--green-light); }
+  .term-cmd { color: var(--text); }
+  .term-out { color: var(--text3); }
+  .term-out.hi { color: var(--amber); }
+  .term-out.ok { color: var(--green-light); }
+
+  /* LANGUAGES */
+  .lang-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .lang-card {
+    border: 0.5px solid var(--border);
+    padding: 1rem 1.25rem; background: var(--bg2);
+    min-width: 130px; transition: border-color 0.2s, transform 0.2s;
+  }
+  .lang-card:hover { border-color: var(--border2); transform: translateY(-3px); }
+  .lang-n { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--text); }
+  .lang-level { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; }
+  .lang-badge {
+    display: inline-block; margin-top: 6px; font-size: 9px; padding: 2px 8px;
+    border-radius: 2px; letter-spacing: 0.1em;
+  }
+  .lang-badge.nat { background: var(--green-dim); color: var(--green-light); border: 0.5px solid var(--green); }
+  .lang-badge.int { background: var(--purple-dim); color: #AFA9EC; border: 0.5px solid var(--purple-dark); }
+
+  /* CONTACT */
+  .contact-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2rem; }
+  .c-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px; border: 0.5px solid var(--border);
+    background: var(--bg2); font-size: 12px; color: var(--text2);
+    text-decoration: none; transition: all 0.2s;
+  }
+  .c-item:hover { border-color: var(--purple); color: var(--text); }
+  .c-item svg { width: 14px; height: 14px; stroke: var(--purple); flex-shrink: 0; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 3rem 2rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 10px; color: var(--text3); letter-spacing: 0.15em;
+  }
+  footer span { color: var(--purple); }
+
+  /* REVEAL ANIMATION */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* GLITCH EFFECT ON NAME */
+  .glitch {
+    position: relative;
+  }
+  .glitch:hover::before, .glitch:hover::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0; width: 100%;
+    font-family: 'Rajdhani', sans-serif; font-weight: 700;
+    font-size: clamp(3rem, 8vw, 6rem); line-height: 0.9;
+  }
+  .glitch:hover::before {
+    color: var(--green-light); clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    transform: translate(-3px); animation: glitch1 0.3s infinite;
+  }
+  .glitch:hover::after {
+    color: var(--purple); clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    transform: translate(3px); animation: glitch2 0.3s infinite;
+  }
+  @keyframes glitch1 { 0%,100%{transform:translate(-3px)} 50%{transform:translate(3px)} }
+  @keyframes glitch2 { 0%,100%{transform:translate(3px)} 50%{transform:translate(-3px)} }
+
+  /* PROJECTS */
+  .proj-card {
+    border: .5px solid var(--border); background: var(--bg2);
+    padding: 1.5rem; position: relative; overflow: hidden;
+    transition: border-color .3s, background .3s;
+  }
+  .proj-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: var(--purple-dark); transition: background .3s;
+  }
+  .proj-card:hover { border-color: var(--border2); background: var(--bg3); }
+  .proj-card:hover::before { background: var(--purple); }
+  .proj-title {
+    font-family: 'Rajdhani', sans-serif; font-size: 1.15rem;
+    font-weight: 700; color: var(--text); margin-bottom: .5rem;
+  }
+  .proj-desc { font-size: 12px; color: var(--text2); line-height: 1.8; margin-bottom: 1rem; }
+  .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+  .proj-tag {
+    font-size: 9px; padding: 2px 10px; letter-spacing: .12em;
+    border: .5px solid var(--purple-dark); color: #CCC8F9;
+    background: var(--purple-dim); border-radius: 2px;
+  }
+  .proj-tag.g { border-color: rgba(29,158,117,.5); color: var(--green-light); background: var(--green-dim); }
+  .proj-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; padding: 6px 16px; letter-spacing: .1em;
+    border: .5px solid var(--purple); color: var(--purple);
+    background: var(--purple-dim); text-decoration: none;
+    transition: background .2s;
+  }
+  .proj-link:hover { background: rgba(83,74,183,.35); }
+  /* BINGO INLINE PANEL */
+  #bingo-panel { margin-top:1.25rem; border-top:.5px solid var(--border); }
+  #bingo-panel .bp-header { display:flex; justify-content:space-between; align-items:center; padding:.875rem 0 .875rem; border-bottom:.5px solid var(--border); margin-bottom:1rem; }
+  #bingo-panel .bp-logo { font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:.1em; }
+  #bingo-panel .bp-logo span { color:var(--purple); }
+  #bingo-panel .bp-credits { font-size:12px; color:var(--green-light); border:.5px solid var(--border2); padding:3px 12px; }
+  #bingo-panel .b-loading { text-align:center; padding:3rem; font-size:12px; color:var(--text3); }
+  #bingo-panel .b-status { font-size:10px; color:var(--text3); letter-spacing:.12em; min-height:16px; padding:.25rem 0; }
+  #bingo-panel .b-panel { display:none; flex-direction:column; gap:1rem; }
+  #bingo-panel .b-panel.active { display:flex; }
+  #bingo-panel .b-box { background:var(--bg); border:.5px solid var(--border); padding:1.25rem; margin-bottom:.5rem; }
+  #bingo-panel .b-lbl { font-size:9px; letter-spacing:.2em; color:var(--text3); text-transform:uppercase; margin-bottom:.75rem; }
+  #bingo-panel .b-bet-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  #bingo-panel .b-bet-btn { background:var(--bg3); border:.5px solid var(--border); color:var(--text2); font-family:'Share Tech Mono',monospace; font-size:12px; padding:.6rem .3rem; cursor:pointer; transition:all .2s; text-align:center; }
+  #bingo-panel .b-bet-btn:hover { border-color:var(--purple); color:var(--text); background:var(--purple-dim); }
+  #bingo-panel .b-bet-btn.selected { border-color:var(--purple); background:var(--purple-dim); color:var(--purple); }
+  #bingo-panel .b-card { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:1rem; }
+  #bingo-panel .b-cell { background:var(--bg3); border:.5px solid var(--border); display:flex; align-items:center; justify-content:center; height:52px; font-size:15px; font-weight:700; border-radius:2px; transition:all .35s; position:relative; }
+  #bingo-panel .b-cell.hit { background:var(--purple-dim); border-color:var(--purple); color:var(--purple); box-shadow:0 0 12px rgba(127,119,221,.3); }
+  #bingo-panel .b-cell.hit::after { content:'✓'; position:absolute; top:2px; right:4px; font-size:9px; color:var(--purple); opacity:.7; }
+  #bingo-panel .b-cell.xhit { background:var(--green-dim); border-color:var(--green-light); color:var(--green-light); }
+  #bingo-panel .b-balls { display:flex; flex-wrap:wrap; gap:6px; }
+  #bingo-panel .b-ball { width:36px; height:36px; border-radius:50%; background:var(--bg3); border:.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .3s; }
+  #bingo-panel .b-ball.drawn { border-color:var(--border2); color:var(--text2); }
+  #bingo-panel .b-ball.hit-b { background:var(--purple-dim); border-color:var(--purple); color:var(--purple); box-shadow:0 0 8px rgba(127,119,221,.4); font-weight:700; }
+  #bingo-panel .b-ball.free-b { background:var(--green-dim); border-color:var(--green-light); color:var(--green-light); }
+  #bingo-panel .b-ball.xhit-b { background:rgba(239,159,39,.1); border-color:var(--amber); color:var(--amber); }
+  #bingo-panel .b-info-row { display:flex; gap:1rem; flex-wrap:wrap; }
+  #bingo-panel .b-chip { background:var(--bg3); border:.5px solid var(--border); padding:6px 14px; font-size:12px; color:var(--text2); }
+  #bingo-panel .b-chip span { color:var(--green-light); }
+  #bingo-panel .b-chip.win span { color:var(--purple); }
+  #bingo-panel .b-btn-row { display:flex; gap:8px; flex-wrap:wrap; }
+  #bingo-panel .b-btn { font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.1em; padding:.55rem 1.1rem; border:.5px solid; cursor:pointer; transition:all .2s; background:transparent; }
+  #bingo-panel .b-btn.primary { border-color:var(--purple); color:var(--purple); background:var(--purple-dim); }
+  #bingo-panel .b-btn.primary:hover { background:rgba(83,74,183,.35); }
+  #bingo-panel .b-btn.green { border-color:var(--green-light); color:var(--green-light); background:var(--green-dim); }
+  #bingo-panel .b-btn.green:hover { background:rgba(29,158,117,.25); }
+  #bingo-panel .b-btn.ghost { border-color:var(--border2); color:var(--text3); }
+  #bingo-panel .b-btn.ghost:hover { border-color:var(--text2); color:var(--text2); }
+  #bingo-panel .b-btn.amber { border-color:var(--amber); color:var(--amber); background:rgba(239,159,39,.08); }
+  #bingo-panel .b-btn.amber:hover { background:rgba(239,159,39,.18); }
+  #bingo-panel .b-btn:disabled { opacity:.35; cursor:not-allowed; }
+  #bingo-panel .b-fg-draw { margin-bottom:.75rem; }
+  #bingo-panel .b-fg-num { font-size:9px; letter-spacing:.15em; color:var(--amber); margin-bottom:4px; }
+  #bingo-panel .b-pot { font-family:'Rajdhani',sans-serif; font-size:2.5rem; font-weight:700; color:var(--green-light); text-align:center; padding:1rem; border:.5px solid var(--border); background:var(--bg2); margin-bottom:1rem; }
+  #bingo-panel .b-don-cards { display:flex; gap:12px; justify-content:center; margin-bottom:1rem; }
+  #bingo-panel .b-don-card { flex:1; max-width:200px; padding:2rem 1rem; text-align:center; border:.5px solid; cursor:pointer; font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:.1em; transition:all .2s; }
+  #bingo-panel .b-don-red { border-color:#e05252; color:#e05252; background:rgba(224,82,82,.08); }
+  #bingo-panel .b-don-red:hover { background:rgba(224,82,82,.25); transform:translateY(-4px); }
+  #bingo-panel .b-don-blue { border-color:var(--purple); color:var(--purple); background:var(--purple-dim); }
+  #bingo-panel .b-don-blue:hover { background:rgba(127,119,221,.3); transform:translateY(-4px); }
+  #bingo-panel .b-sum-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+  #bingo-panel .b-sum-row { background:var(--bg2); border:.5px solid var(--border); padding:.75rem 1rem; display:flex; justify-content:space-between; font-size:12px; }
+  #bingo-panel .b-sum-row .val { color:var(--green-light); }
+  #bingo-panel .b-flash { text-align:center; padding:1.5rem; font-family:'Rajdhani',sans-serif; font-size:1.8rem; font-weight:700; border:.5px solid; margin-bottom:1rem; }
+  #bingo-panel .b-flash.won { color:var(--green-light); border-color:var(--green-light); background:var(--green-dim); }
+  #bingo-panel .b-flash.lost { color:#e05252; border-color:#e05252; background:rgba(224,82,82,.08); }
+
+  /* PARTICLE CANVAS */
+  #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  @media (max-width: 640px) {
+    nav { padding: 0.75rem 1rem; }
+    .nav-links { gap: 1rem; }
+    section { padding: 3rem 1rem; }
+    #hero { padding: 6rem 1rem 3rem; }
+    .hero-stats { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ACL<span>.</span>dev</div>
+  <div class="nav-links">
+    <a href="#about">perfil</a>
+    <a href="#experience">experiencia</a>
+    <a href="#skills">skills</a>
+    <a href="#projects">proyectos</a>
+    <a href="#contact">contacto</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="blink-dot"></div>
+      <span class="eyebrow-txt">disponible para nuevos retos · Barcelona / Remote</span>
+    </div>
+    <div class="hero-name">
+      <div class="line1 glitch" data-text="ALEJANDRO">ALEJANDRO</div>
+      <div class="line2">CALAHORRO</div>
+    </div>
+    <p class="hero-title">QA Senior Engineer · Gaming &amp; Sistemas Críticos · 7 años</p>
+    <div id="typewriter"></div>
+    <div class="hero-tags">
+      <span class="htag">Godot Engine</span>
+      <span class="htag">C++ / GDScript</span>
+      <span class="htag">Jira Expert</span>
+      <span class="htag g">Python · Playwright</span>
+      <span class="htag g">Bash Scripting</span>
+      <span class="htag g">Compliance GLI/BMM</span>
+      <span class="htag a">SQL / MySQL</span>
+      <span class="htag a">TestRail</span>
+      <span class="htag a">Git / Bitbucket</span>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-n" data-count="7">0</div>
+        <div class="hstat-l">años en gaming</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n">GLI</div>
+        <div class="hstat-l">BMM certified</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n">E2E</div>
+        <div class="hstat-l">automatización</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" style="color:var(--green)">0</div>
+        <div class="hstat-l">errores en prod.</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-header reveal">
+    <span class="sec-num">01</span>
+    <h2 class="sec-title">perfil</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="about-box reveal">
+    Tester con <strong>mentalidad de desarrollador</strong>: no me limito a reportar un fallo, sino que investigo el código en <strong>C++</strong> o la escena en <strong>Godot</strong> para entender la raíz del problema. 7 años especializándome en la validación de sistemas críticos de juego — Slots y Bingos — bajo estándares de <strong>error cero</strong>, donde la convergencia de hardware y software exige precisión innegociable.<br><br>
+    Desarrollo <strong>aplicativos de automatización propios</strong> con Bash y Python + Playwright, llevando la cobertura de testing al siguiente nivel. Analítico, detallista y capaz de mantener la calma en entornos de lanzamiento crítico.
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="sec-header reveal">
+    <span class="sec-num">02</span>
+    <h2 class="sec-title">experiencia</h2>
+    <div class="sec-line"></div>
+  </div>
+
+  <div class="exp-item reveal">
+    <div class="exp-top">
+      <span class="exp-role">Software Quality Assurance Specialist<span class="exp-badge">7 AÑOS</span></span>
+      <span class="exp-dates">05/2019 – actualidad</span>
+    </div>
+    <div class="exp-co">Zitrogames · Sant Quirze del Vallès, Barcelona</div>
+    <ul class="bullets">
+      <li><strong>Liderazgo técnico:</strong> dirección de la estrategia de testing para títulos desarrollados en Godot, garantizando paridad exacta entre el modelo matemático y la ejecución visual.</li>
+      <li><strong>Automatización E2E:<span class="new-pill">NEW</span></strong> desarrollo de aplicativos de automatización propios con <strong>Bash scripting</strong> y <strong>Python + Playwright</strong> para cobertura completa de flujos críticos de juego.</li>
+      <li><strong>Testing de Core y Memoria:</strong> depuración técnica en C++ para detección de memory leaks y optimización de recursos en sistemas embebidos y gabinetes de azar.</li>
+      <li><strong>Análisis de Datos y Auditoría:</strong> consultas complejas en SQL/MySQL para auditar la persistencia de datos y la correcta adjudicación de premios.</li>
+      <li><strong>Hardware Benchmarking:</strong> pruebas de estrés y carga sobre hardware específico, asegurando la estabilidad del sistema en condiciones extremas.</li>
+      <li><strong>Compliance Internacional:</strong> aseguramiento de normativas GLI/BMM, coordinando equipos multidisciplinares de Matemáticas, Arte y Dev.</li>
+      <li><strong>Comunicación Técnica:</strong> interfaz directa con el equipo de desarrollo para reporte y reproducción de bugs complejos mediante análisis de código C++ y GDScript.</li>
+    </ul>
+  </div>
+
+  <div class="exp-item reveal">
+    <div class="exp-top">
+      <span class="exp-role">HelpDesk</span>
+      <span class="exp-dates">08/2018 – 04/2019</span>
+    </div>
+    <div class="exp-co">Soporte a Vodafone · Terrassa</div>
+    <ul class="bullets">
+      <li>Atención y soporte técnico a comerciantes Vodafone. Reporte de errores del aplicativo interno. Gestión de documentación e informes.</li>
+    </ul>
+  </div>
+
+  <div class="exp-item reveal">
+    <div class="exp-top">
+      <span class="exp-role">Técnico de Mantenimiento Informático</span>
+      <span class="exp-dates">02/2018 – 06/2018</span>
+    </div>
+    <div class="exp-co">Instituto de Matadepera · Matadepera</div>
+    <ul class="bullets">
+      <li>Instalación de SSOO, montaje de hardware, desarrollo de webs con WordPress, elaboración de informes y estadísticas.</li>
+    </ul>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal reveal">
+    <div class="terminal-bar">
+      <div class="term-dot r"></div>
+      <div class="term-dot y"></div>
+      <div class="term-dot g"></div>
+      <span class="term-title">alejandro@zitrogames ~ automation_stack</span>
+    </div>
+    <div class="terminal-body">
+      <span class="term-line"><span class="term-prompt">alejandro@qa:~$</span> <span class="term-cmd">python run_tests.py --framework playwright --headless</span></span>
+      <span class="term-line term-out hi">→ Launching Chromium browser...</span>
+      <span class="term-line term-out">→ Loading slot game test suite [48 cases]</span>
+      <span class="term-line term-out">→ Running UI automation flows...</span>
+      <span class="term-line term-out ok">✓ Spin mechanics validated [12/12]</span>
+      <span class="term-line term-out ok">✓ Bonus round triggers verified [8/8]</span>
+      <span class="term-line term-out ok">✓ Paytable rendering confirmed [28/28]</span>
+      <span class="term-line term-out hi">→ Running bash compliance checks...</span>
+      <span class="term-line term-out ok">✓ GLI-11 requirements: PASSED</span>
+      <span class="term-line term-out ok">✓ BMM certification suite: PASSED</span>
+      <span class="term-line"><span class="term-prompt">alejandro@qa:~$</span> <span class="term-cmd" id="term-blink">_</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="sec-header reveal">
+    <span class="sec-num">03</span>
+    <h2 class="sec-title">habilidades técnicas</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-group reveal">
+      <div class="sg-label">gestión QA</div>
+      <div class="sk"><span class="sk-name">Jira</span><div class="sk-track"><div class="sk-fill" style="width:0" data-w="98%"></div></div></div>
+      <div class="sk"><span class="sk-name">TestRail</span><div class="sk-track"><div class="sk-fill" style="width:0" data-w="90%"></div></div></div>
+      <div class="sk"><span class="sk-name">Confluence</span><div class="sk-track"><div class="sk-fill" style="width:0" data-w="85%"></div></div></div>
+      <div class="sk"><span class="sk-name">Análisis Riesgos</span><div class="sk-track"><div class="sk-fill" style="width:0" data-w="88%"></div></div></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="sg-label">motores y dev</div>
+      <div class="sk"><span class="sk-name">Godot Engine</span><div class="sk-track"><div class="sk-fill g" style="width:0" data-w="92%"></div></div></div>
+      <div class="sk"><span class="sk-name">GDScript</span><div class="sk-track"><div class="sk-fill g" style="width:0" data-w="85%"></div></div></div>
+      <div class="sk"><span class="sk-name">C++</span><div class="sk-track"><div class="sk-fill g" style="width:0" data-w="78%"></div></div></div>
+      <div class="sk"><span class="sk-name">Análisis de Logs</span><div class="sk-track"><div class="sk-fill g" style="width:0" data-w="90%"></div></div></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="sg-label">automatización y datos</div>
+      <div class="sk"><span class="sk-name">Python</span><div class="sk-track"><div class="sk-fill a" style="width:0" data-w="85%"></div></div></div>
+      <div class="sk"><span class="sk-name">Playwright</span><div class="sk-track"><div class="sk-fill a" style="width:0" data-w="82%"></div></div></div>
+      <div class="sk"><span class="sk-name">Bash Scripting</span><div class="sk-track"><div class="sk-fill a" style="width:0" data-w="80%"></div></div></div>
+      <div class="sk"><span class="sk-name">SQL / MySQL</span><div class="sk-track"><div class="sk-fill a" style="width:0" data-w="85%"></div></div></div>
+      <div class="sk"><span class="sk-name">Git / Bitbucket</span><div class="sk-track"><div class="sk-fill a" style="width:0" data-w="82%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="sec-header reveal">
+    <span class="sec-num">04</span>
+    <h2 class="sec-title">proyectos</h2>
+    <div class="sec-line"></div>
+  </div>
+
+  <div class="proj-card reveal">
+    <div class="proj-title">Bingo Engine — C++17 → WebAssembly</div>
+    <div class="proj-desc">
+      Motor completo de juego de Bingo desarrollado en <strong style="color:var(--green-light)">C++17</strong> y compilado a <strong style="color:var(--green-light)">WebAssembly</strong> con Emscripten.
+      Implementa la lógica completa: selección de apuesta, cartón, bombo de 30 bolas, bolas extra, freegames (25% de probabilidad) y fase de doble o nada.
+      La API de C++ se expone a JavaScript mediante funciones <code style="color:var(--amber)">EMSCRIPTEN_KEEPALIVE</code>, con estado de juego serializado como JSON.
+      Persistencia mediante <code style="color:var(--amber)">localStorage</code> (historial de partidas).
+    </div>
+    <div class="proj-tags">
+      <span class="proj-tag">C++17</span>
+      <span class="proj-tag">Emscripten</span>
+      <span class="proj-tag">WebAssembly</span>
+      <span class="proj-tag">nlohmann/json</span>
+      <span class="proj-tag g">Fisher-Yates shuffle</span>
+      <span class="proj-tag g">State machine</span>
+    </div>
+    <button class="proj-link" id="bingo-toggle-btn" onclick="toggleBingo(this)" style="background:transparent;font-family:'Share Tech Mono',monospace;cursor:pointer">▶ &nbsp;Demo Interactiva</button>
+
+    <!-- BINGO GAME INLINE -->
+    <div id="bingo-panel" style="display:none">
+      <div class="bp-header">
+        <div class="bp-logo">BINGO<span>.</span>wasm</div>
+        <div id="bp-credits">Credits: 100.00€</div>
+      </div>
+
+      <div id="bp-loading" class="b-loading">Initializing C++ engine<span style="animation:blink 1s infinite">...</span></div>
+      <div id="bp-app" style="display:none">
+
+        <!-- BET SELECTION -->
+        <div class="b-panel" id="bp-bet">
+          <div class="b-box">
+            <div class="b-lbl">Select bet level</div>
+            <div class="b-bet-grid">
+              <div class="b-bet-btn" onclick="bSelectBet(0)"><div style="color:var(--purple)">5.00€</div><div style="font-size:9px;color:var(--text3)">Prize: 1.00€/ball</div></div>
+              <div class="b-bet-btn" onclick="bSelectBet(1)"><div style="color:var(--purple)">10.00€</div><div style="font-size:9px;color:var(--text3)">Prize: 1.60€/ball</div></div>
+              <div class="b-bet-btn" onclick="bSelectBet(2)"><div style="color:var(--purple)">15.00€</div><div style="font-size:9px;color:var(--text3)">Prize: 3.10€/ball</div></div>
+              <div class="b-bet-btn" onclick="bSelectBet(3)"><div style="color:var(--purple)">20.00€</div><div style="font-size:9px;color:var(--text3)">Prize: 3.60€/ball</div></div>
+              <div class="b-bet-btn" onclick="bSelectBet(4)"><div style="color:var(--purple)">30.00€</div><div style="font-size:9px;color:var(--text3)">Prize: 4.60€/ball</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD -->
+        <div class="b-panel" id="bp-card">
+          <div class="b-box">
+            <div class="b-lbl">Your card — <span id="bp-bet-info" style="color:var(--purple)"></span></div>
+            <div class="b-card" id="bp-card-grid"></div>
+            <div class="b-btn-row">
+              <button class="b-btn ghost" onclick="bRerollCard()">↺ Change Card</button>
+              <button class="b-btn primary" onclick="bStartDraw()">▶ Play!</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRAWING ANIMATION -->
+        <div class="b-panel" id="bp-drawing">
+          <div class="b-box">
+            <div class="b-lbl">Drawing balls<span id="bp-draw-dots">...</span></div>
+            <div class="b-card" id="bp-draw-card"></div>
+            <div class="b-lbl" style="margin-top:.75rem">Bombo</div>
+            <div class="b-balls" id="bp-draw-balls"></div>
+          </div>
+        </div>
+
+        <!-- EXTRA BALLS -->
+        <div class="b-panel" id="bp-extra">
+          <div class="b-box">
+            <div class="b-lbl">Base result</div>
+            <div class="b-card" id="bp-extra-card"></div>
+            <div class="b-info-row" style="margin-top:.5rem">
+              <div class="b-chip">Hits: <span id="bp-hits">0</span></div>
+              <div class="b-chip win">Base won: <span id="bp-base-win">0.00€</span></div>
+            </div>
+          </div>
+          <div class="b-box">
+            <div class="b-lbl" id="bp-extra-lbl">Extra ball offer</div>
+            <div id="bp-extra-display" style="margin-bottom:.75rem"></div>
+            <div class="b-btn-row">
+              <button class="b-btn green" onclick="bBuyExtra()">Buy</button>
+              <button class="b-btn ghost" onclick="bSkipExtra()">Skip remaining →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FREEGAMES -->
+        <div class="b-panel" id="bp-freegames">
+          <div class="b-box">
+            <div class="b-lbl" style="color:var(--amber)">★ FREEGAMES ★</div>
+            <div class="b-card" id="bp-fg-card"></div>
+          </div>
+          <div class="b-box">
+            <div id="bp-fg-content"></div>
+            <div class="b-info-row" style="margin-top:.5rem">
+              <div class="b-chip win">Freegame hits: <span id="bp-fg-hits">0</span></div>
+              <div class="b-chip win">Freegame won: <span id="bp-fg-win">0.00€</span></div>
+            </div>
+            <div id="bp-fg-btn" class="b-btn-row" style="margin-top:.75rem;display:none">
+              <button class="b-btn green" onclick="bFinishFG()">Collect →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOUBLE OR NOTHING -->
+        <div class="b-panel" id="bp-don">
+          <div class="b-box">
+            <div class="b-lbl">Double or Nothing — round <span id="bp-don-round">0</span>/5</div>
+            <div class="b-pot">Pot: <span id="bp-don-pot">0.00</span>€</div>
+            <div class="b-don-cards">
+              <div class="b-don-card b-don-red" onclick="bPlayDon(1)">♥ RED</div>
+              <div class="b-don-card b-don-blue" onclick="bPlayDon(2)">♠ BLUE</div>
+            </div>
+            <div class="b-btn-row" style="justify-content:center">
+              <button class="b-btn amber" onclick="bExitDon()">Take the money</button>
+            </div>
+            <div id="bp-don-result" style="margin-top:.75rem;min-height:24px;text-align:center;font-size:13px"></div>
+          </div>
+        </div>
+
+        <!-- ROUND OVER -->
+        <div class="b-panel" id="bp-over">
+          <div id="bp-flash" class="b-flash won">WELL PLAYED!</div>
+          <div class="b-box">
+            <div class="b-lbl">Round summary</div>
+            <div class="b-sum-grid" id="bp-summary"></div>
+          </div>
+          <div class="b-btn-row">
+            <button class="b-btn primary" onclick="bNewRound()">▶ Play Again</button>
+          </div>
+        </div>
+
+      </div><!-- #bp-app -->
+      <div class="b-status" id="bp-status"></div>
+    </div><!-- #bingo-panel -->
+  </div>
+</section>
+
+<!-- LANGUAGES -->
+<section id="languages">
+  <div class="sec-header reveal">
+    <span class="sec-num">05</span>
+    <h2 class="sec-title">idiomas</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="lang-row reveal">
+    <div class="lang-card">
+      <div class="lang-n">Español</div>
+      <div class="lang-level">C2</div>
+      <span class="lang-badge nat">Nativo</span>
+    </div>
+    <div class="lang-card">
+      <div class="lang-n">Catalán</div>
+      <div class="lang-level">C2</div>
+      <span class="lang-badge nat">Nativo</span>
+    </div>
+    <div class="lang-card">
+      <div class="lang-n">Inglés</div>
+      <div class="lang-level">B2</div>
+      <span class="lang-badge int">Intermedio avanzado</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="sec-header reveal">
+    <span class="sec-num">06</span>
+    <h2 class="sec-title">contacto</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="contact-grid reveal">
+    <a class="c-item" href="tel:691034435">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.04 1.18 2 2 0 012 .02h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+      691 034 435
+    </a>
+    <a class="c-item" href="mailto:calahorro1999@hotmail.com">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      calahorro1999@hotmail.com
+    </a>
+    <a class="c-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      LinkedIn
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>Alejandro Calahorro Luque · <span>QA Senior Engineer</span> · 2025</p>
+  <p style="margin-top:8px">Zitrogames · Sant Quirze del Vallès · España</p>
+</footer>
+
+<script>
+  // CUSTOM CURSOR
+  const cursor = document.getElementById('cursor');
+  const dot = document.getElementById('cursor-dot');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    dot.style.left = e.clientX + 'px';
+    dot.style.top = e.clientY + 'px';
+  });
+
+  // PARTICLES
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.4 + 0.1
+    });
+  }
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(127,119,221,${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  // TYPEWRITER
+  const phrases = [
+    'Especialista en Gaming & Sistemas Críticos',
+    'Automation Engineer · Python + Playwright',
+    'Compliance GLI/BMM · Error zero policy',
+    'Godot · C++ · GDScript · SQL · Bash',
+  ];
+  let pi = 0, ci = 0, deleting = false;
+  const tw = document.getElementById('typewriter');
+  function type() {
+    const phrase = phrases[pi];
+    if (!deleting) {
+      tw.textContent = phrase.slice(0, ++ci);
+      if (ci === phrase.length) { deleting = true; setTimeout(type, 1800); return; }
+    } else {
+      tw.textContent = phrase.slice(0, --ci);
+      if (ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; }
+    }
+    setTimeout(type, deleting ? 35 : 65);
+  }
+  type();
+
+  // COUNT UP
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    let n = 0;
+    const step = () => { if (n < target) { el.textContent = ++n; setTimeout(step, 200); } };
+    setTimeout(step, 800);
+  });
+
+  // SCROLL REVEAL
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // SKILL BARS ANIMATE ON SCROLL
+  const skillObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.sk-fill[data-w]').forEach((bar, i) => {
+          setTimeout(() => { bar.style.width = bar.dataset.w; }, i * 100);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.skill-group').forEach(g => skillObs.observe(g));
+
+  // TERMINAL BLINK
+  const tb = document.getElementById('term-blink');
+  setInterval(() => { tb.style.opacity = tb.style.opacity === '0' ? '1' : '0'; }, 600);
+
+  // ─── BINGO WASM ──────────────────────────────────────────────────────────────
+  let bM, bState, bLoaded = false;
+  const bApi = {};
+  const BFUNCS = [
+    ['init',            null,     []],
+    ['get_state',       'number', []],
+    ['select_bet',      'number', ['number']],
+    ['generate_card',   'number', []],
+    ['reroll_card',     'number', []],
+    ['draw',            'number', []],
+    ['buy_extra_ball',  'number', []],
+    ['skip_extra_balls','number', []],
+    ['finish_freegames','number', []],
+    ['play_don',        'number', ['number']],
+    ['exit_don',        'number', []],
+    ['save_game',       'number', []],
+    ['load_history',    'number', []],
+    ['reset_round',     null,     []],
+  ];
+
+  function toggleBingo(btn) {
+    const panel = document.getElementById('bingo-panel');
+    const open  = panel.style.display === 'block';
+    panel.style.display = open ? 'none' : 'block';
+    btn.innerHTML = open ? '▶ &nbsp;Demo Interactiva' : '◼ &nbsp;Cerrar Demo';
+    if (!open && !bLoaded) {
+      bLoaded = true;
+      const sc = document.createElement('script');
+      sc.src = 'bingo.js';
+      sc.onerror = () => {
+        document.getElementById('bp-loading').innerHTML =
+          '<span style="color:#e05252">bingo.js not found — run <code>make -f Makefile.wasm</code> first</span>';
+      };
+      sc.onload = () => {
+        BingoModule().then(mod => {
+          bM = mod;
+          BFUNCS.forEach(([name, ret, args]) => {
+            const wrap = bM.cwrap('bingo_' + name, ret, args);
+            bApi[name] = ret === 'number'
+              ? (...a) => { const p = wrap(...a); return p ? JSON.parse(bM.UTF8ToString(p)) : null; }
+              : wrap;
+          });
+          bApi.init();
+          document.getElementById('bp-loading').style.display = 'none';
+          document.getElementById('bp-app').style.display     = 'block';
+          bState = bApi.generate_card();
+          bRender(bState);
+        });
+      };
+      document.head.appendChild(sc);
+    }
+  }
+
+  function bRender(s) {
+    bState = s;
+    document.getElementById('bp-credits').textContent = 'Credits: ' + s.credits.toFixed(2) + '€';
+    document.querySelectorAll('#bingo-panel .b-panel').forEach(p => p.classList.remove('active'));
+    switch (s.phase) {
+      case 'IDLE':        bBshow('bp-bet'); break;
+      case 'BET_SELECTED':
+        bState = bApi.generate_card(); s = bState;
+        /* fall through */
+      case 'CARD_READY':
+        bRenderCard('bp-card-grid', s.card, []);
+        document.getElementById('bp-bet-info').textContent =
+          s.betCost.toFixed(2) + '€ · prize ' + s.prizePerBall.toFixed(2) + '€/ball';
+        bBshow('bp-card');
+        break;
+      case 'EXTRA_BALLS':
+        bRenderCard('bp-extra-card', s.card, s.hits, s.extraBallsHit);
+        document.getElementById('bp-hits').textContent     = s.totalHits;
+        document.getElementById('bp-base-win').textContent = s.baseWinnings.toFixed(2) + '€';
+        bRenderExtraOffer(s);
+        bBshow('bp-extra');
+        break;
+      case 'FREEGAMES':
+        bRenderCard('bp-fg-card', s.card, [], []);
+        bRenderFreegames(s);
+        bBshow('bp-freegames');
+        break;
+      case 'DOUBLE_OR_NOTHING':
+        document.getElementById('bp-don-pot').textContent   = s.pot.toFixed(2);
+        document.getElementById('bp-don-round').textContent = s.donRounds;
+        document.getElementById('bp-don-result').textContent = '';
+        bBshow('bp-don');
+        break;
+      case 'ROUND_OVER':
+        bRenderSummary(s);
+        bBshow('bp-over');
+        break;
+    }
+    bSetStatus('');
+  }
+
+  function bBshow(id) { document.getElementById(id).classList.add('active'); }
+
+  function bRenderCard(gridId, card, hits, extraHits) {
+    extraHits = extraHits || [];
+    const hitSet = new Set(hits), xSet = new Set(extraHits);
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    card.forEach(n => {
+      const d = document.createElement('div');
+      d.className = 'b-cell';
+      d.textContent = n;
+      if (xSet.has(n))        d.classList.add('xhit');
+      else if (hitSet.has(n)) d.classList.add('hit');
+      grid.appendChild(d);
+    });
+  }
+
+  function bAnimateDraw(drawResult) {
+    bBshow('bp-drawing');
+    bSetStatus('Drawing 30 balls...');
+    bRenderCard('bp-draw-card', drawResult.card, []);
+    const ballsEl = document.getElementById('bp-draw-balls');
+    ballsEl.innerHTML = '';
+    const hitSet = new Set(drawResult.hits);
+    let i = 0;
+    const step = () => {
+      if (i >= drawResult.draw.length) {
+        bRenderCard('bp-draw-card', drawResult.card, drawResult.hits);
+        setTimeout(() => bRender(drawResult), 900);
+        return;
+      }
+      const n = drawResult.draw[i];
+      const b = document.createElement('div');
+      b.className = hitSet.has(n) ? 'b-ball hit-b' : 'b-ball drawn';
+      b.textContent = n;
+      ballsEl.appendChild(b);
+      i++;
+      setTimeout(step, 60);
+    };
+    step();
+  }
+
+  function bRenderExtraOffer(s) {
+    const cursor = s.extraBallCursor;
+    if (cursor >= 10) { bSkipExtra(); return; }
+    const ball   = s.extraBallPool[cursor];
+    const isFree = (cursor === s.freeBallIndex);
+    const cost   = isFree ? 'FREE!' : s.extraBallCost.toFixed(2) + '€';
+    const el = document.getElementById('bp-extra-display');
+    el.innerHTML =
+      '<div class="b-ball ' + (isFree ? 'free-b' : 'drawn') + '" style="width:52px;height:52px;font-size:18px;margin-bottom:.5rem">' + ball + '</div>' +
+      '<div class="b-info-row"><div class="b-chip">Ball ' + (cursor + 1) + '/10 &nbsp; Cost: <span>' + cost + '</span></div>' +
+      (s.extraBallsBought.length ? '<div class="b-chip">Extra won: <span>' + s.extraBallWinnings.toFixed(2) + '€</span></div>' : '') +
+      '</div>';
+    document.getElementById('bp-extra-lbl').textContent =
+      'Extra ball ' + (cursor + 1) + '/10  —  ' + (isFree ? 'This one is FREE!' : 'Cost: ' + cost);
+  }
+
+  function bRenderFreegames(s) {
+    const cardSet = new Set(s.card);
+    const content = document.getElementById('bp-fg-content');
+    content.innerHTML = '';
+    document.getElementById('bp-fg-hits').textContent = s.freegameHits.length;
+    document.getElementById('bp-fg-win').textContent  = s.freegameWinnings.toFixed(2) + '€';
+    document.getElementById('bp-fg-btn').style.display = 'none';
+    let drawIdx = 0;
+    const showNextDraw = () => {
+      if (drawIdx >= s.freeDraws.length) {
+        document.getElementById('bp-fg-btn').style.display = 'flex';
+        return;
+      }
+      const fd = s.freeDraws[drawIdx];
+      const wrap = document.createElement('div');
+      wrap.className = 'b-fg-draw';
+      wrap.innerHTML = '<div class="b-fg-num">FREEGAME ' + (drawIdx + 1) + '</div><div class="b-balls" id="bfg' + drawIdx + '"></div>';
+      content.appendChild(wrap);
+      const bw = document.getElementById('bfg' + drawIdx);
+      let bi = 0;
+      const step = () => {
+        if (bi >= fd.length) { drawIdx++; setTimeout(showNextDraw, 300); return; }
+        const n = fd[bi];
+        const b = document.createElement('div');
+        b.className = cardSet.has(n) ? 'b-ball hit-b' : 'b-ball drawn';
+        b.textContent = n;
+        bw.appendChild(b);
+        bi++;
+        setTimeout(step, 35);
+      };
+      step();
+    };
+    showNextDraw();
+  }
+
+  function bRenderSummary(s) {
+    const total = s.baseWinnings + s.extraBallWinnings + s.freegameWinnings +
+                  (s.wonDon ? s.pot : 0) - s.extraBallCost * s.paidExtraBalls - s.betCost;
+    const flash = document.getElementById('bp-flash');
+    if (s.credits <= 0) {
+      flash.className = 'b-flash lost'; flash.textContent = 'OUT OF CREDITS';
+    } else if (total >= 0) {
+      flash.className = 'b-flash won'; flash.textContent = '+' + total.toFixed(2) + '€ THIS ROUND';
+    } else {
+      flash.className = 'b-flash lost'; flash.textContent = total.toFixed(2) + '€ THIS ROUND';
+    }
+    const rows = [
+      ['Bet',               '-' + s.betCost.toFixed(2) + '€'],
+      ['Base hits',         s.totalHits],
+      ['Base winnings',     '+' + s.baseWinnings.toFixed(2) + '€'],
+      ['Extra ball hits',   s.extraBallsHit.length],
+      ['Extra winnings',    '+' + s.extraBallWinnings.toFixed(2) + '€'],
+      ['Freegame hits',     s.freegameHits.length],
+      ['Freegame won',      '+' + s.freegameWinnings.toFixed(2) + '€'],
+      ['Double or Nothing', s.playedDon ? (s.wonDon ? 'WON' : 'LOST') : '—'],
+    ];
+    document.getElementById('bp-summary').innerHTML = rows.map(([k,v]) =>
+      '<div class="b-sum-row"><span>' + k + '</span><span class="val">' + v + '</span></div>'
+    ).join('');
+  }
+
+  function bSelectBet(i)  { bRender(bApi.select_bet(i)); }
+  function bRerollCard()  { bRender(bApi.reroll_card()); }
+  function bStartDraw()   { bAnimateDraw(bApi.draw()); }
+  function bBuyExtra() {
+    const s = bApi.buy_extra_ball();
+    if (s.phase === 'DOUBLE_OR_NOTHING') { bRender(s); return; }
+    bRenderCard('bp-extra-card', s.card, s.hits, s.extraBallsHit);
+    document.getElementById('bp-hits').textContent     = s.totalHits;
+    document.getElementById('bp-base-win').textContent = s.baseWinnings.toFixed(2) + '€';
+    bRenderExtraOffer(s);
+  }
+  function bSkipExtra()     { bRender(bApi.skip_extra_balls()); }
+  function bFinishFG()      { bRender(bApi.finish_freegames()); }
+  function bPlayDon(choice) {
+    const s = bApi.play_don(choice);
+    document.getElementById('bp-don-pot').textContent   = s.pot.toFixed(2);
+    document.getElementById('bp-don-round').textContent = s.donRounds;
+    if (s.phase === 'ROUND_OVER') { bRender(s); return; }
+    const flash = document.getElementById('bp-don-result');
+    flash.style.color = s.wonDon ? 'var(--green-light)' : '#e05252';
+    flash.textContent = s.wonDon ? 'Won! Pot → ' + s.pot.toFixed(2) + '€' : 'Lost! Pot gone.';
+  }
+  function bExitDon()  { bRender(bApi.exit_don()); }
+  function bNewRound() {
+    bApi.save_game();
+    bApi.reset_round();
+    document.querySelectorAll('#bingo-panel .b-panel').forEach(p => p.classList.remove('active'));
+    bBshow('bp-bet');
+    bSetStatus('');
+  }
+  function bSetStatus(msg) { document.getElementById('bp-status').textContent = msg; }
+</script>
+</body>
+</html>
