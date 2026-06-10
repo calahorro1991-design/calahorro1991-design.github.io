@@ -1017,7 +1017,7 @@
   setInterval(() => { tb.style.opacity = tb.style.opacity === '0' ? '1' : '0'; }, 600);
 
   // ─── BINGO WASM ──────────────────────────────────────────────────────────────
-  let bM, bState, bLoaded = false;
+  let bM, bState, bLoaded = false, bDonRetirePot = 0;
   const bApi = {};
   const BFUNCS = [
     ['init',            null,     []],
@@ -1061,7 +1061,7 @@
           bApi.init();
           document.getElementById('bp-loading').style.display = 'none';
           document.getElementById('bp-app').style.display     = 'block';
-          bState = bApi.generate_card();
+          bState = bApi.get_state();
           bRender(bState);
         });
       };
@@ -1162,7 +1162,7 @@
     const cost   = isFree ? 'FREE!' : s.extraBallCost.toFixed(2) + '€';
     const el = document.getElementById('bp-extra-display');
     el.innerHTML =
-      '<div class="b-ball ' + (isFree ? 'free-b' : 'drawn') + '" style="width:52px;height:52px;font-size:18px;margin-bottom:.5rem">' + ball + '</div>' +
+      '<div class="b-ball ' + (isFree ? 'free-b' : 'drawn') + '" style="width:52px;height:52px;font-size:18px;margin-bottom:.5rem">?</div>' +
       '<div class="b-info-row"><div class="b-chip">Ball ' + (cursor + 1) + '/10 &nbsp; Cost: <span>' + cost + '</span></div>' +
       (s.extraBallsBought.length ? '<div class="b-chip">Extra won: <span>' + s.extraBallWinnings.toFixed(2) + '€</span></div>' : '') +
       '</div>';
@@ -1206,8 +1206,12 @@
   }
 
   function bRenderSummary(s) {
-    const total = s.baseWinnings + s.extraBallWinnings + s.freegameWinnings +
-                  (s.wonDon ? s.pot : 0) - s.extraBallCost * s.paidExtraBalls - s.betCost;
+    const extraCosts = s.extraBallCost * s.paidExtraBalls;
+    // If DON was played, pot replaces all individual winnings (won=doubled, lost=0)
+    const netWinnings = s.playedDon
+      ? (s.wonDon ? s.pot : 0)
+      : (s.baseWinnings + s.extraBallWinnings + s.freegameWinnings);
+    const total = netWinnings - extraCosts - s.betCost;
     const flash = document.getElementById('bp-flash');
     if (s.credits <= 0) {
       flash.className = 'b-flash lost'; flash.textContent = 'OUT OF CREDITS';
@@ -1216,18 +1220,32 @@
     } else {
       flash.className = 'b-flash lost'; flash.textContent = total.toFixed(2) + '€ THIS ROUND';
     }
+    let donText;
+    if (!s.playedDon) {
+      donText = '—';
+    } else if (s.wonDon) {
+      donText = 'WON → ' + s.pot.toFixed(2) + '€';
+    } else {
+      donText = 'LOST';
+    }
     const rows = [
-      ['Bet',               '-' + s.betCost.toFixed(2) + '€'],
+      ['Bet',               '−' + s.betCost.toFixed(2) + '€'],
       ['Base hits',         s.totalHits],
       ['Base winnings',     '+' + s.baseWinnings.toFixed(2) + '€'],
       ['Extra ball hits',   s.extraBallsHit.length],
       ['Extra winnings',    '+' + s.extraBallWinnings.toFixed(2) + '€'],
+      ['Extra ball cost',   extraCosts > 0 ? '−' + extraCosts.toFixed(2) + '€' : '—'],
       ['Freegame hits',     s.freegameHits.length],
       ['Freegame won',      '+' + s.freegameWinnings.toFixed(2) + '€'],
-      ['Double or Nothing', s.playedDon ? (s.wonDon ? 'WON' : 'LOST') : '—'],
+      ['Double or Nothing', donText],
     ];
-    document.getElementById('bp-summary').innerHTML = rows.map(([k,v]) =>
-      '<div class="b-sum-row"><span>' + k + '</span><span class="val">' + v + '</span></div>'
+    if (s.playedDon && !s.wonDon && bDonRetirePot > 0) {
+      rows.push(['If retired', '+' + bDonRetirePot.toFixed(2) + '€', true]);
+    }
+    document.getElementById('bp-summary').innerHTML = rows.map(([k, v, amber]) =>
+      amber
+        ? '<div class="b-sum-row" style="border-color:rgba(239,159,39,.3);background:var(--amber-dim)"><span>' + k + '</span><span style="color:var(--amber)">' + v + '</span></div>'
+        : '<div class="b-sum-row"><span>' + k + '</span><span class="val">' + v + '</span></div>'
     ).join('');
   }
 
@@ -1240,21 +1258,58 @@
     bRenderCard('bp-extra-card', s.card, s.hits, s.extraBallsHit);
     document.getElementById('bp-hits').textContent     = s.totalHits;
     document.getElementById('bp-base-win').textContent = s.baseWinnings.toFixed(2) + '€';
-    bRenderExtraOffer(s);
+    const boughtBall = s.extraBallPool[s.extraBallCursor - 1];
+    const wasHit = s.extraBallsHit.includes(boughtBall);
+    const el = document.getElementById('bp-extra-display');
+    document.querySelectorAll('#bp-extra .b-btn').forEach(b => b.disabled = true);
+    el.innerHTML =
+      '<div style="font-size:9px;letter-spacing:.15em;color:var(--text3);margin-bottom:.4rem">BALL OBTAINED</div>' +
+      '<div class="b-ball ' + (wasHit ? 'hit-b' : 'drawn') + '" style="width:52px;height:52px;font-size:18px;margin-bottom:.4rem">' + boughtBall + '</div>' +
+      (wasHit
+        ? '<div style="color:var(--purple);font-size:11px;letter-spacing:.08em">¡HIT! +' + s.prizePerBall.toFixed(2) + '€</div>'
+        : '<div style="color:var(--text3);font-size:11px;letter-spacing:.08em">No match</div>');
+    document.getElementById('bp-extra-lbl').textContent = wasHit ? 'Cardboard ball!' : 'No match';
+    setTimeout(() => {
+      document.querySelectorAll('#bp-extra .b-btn').forEach(b => b.disabled = false);
+      bRenderExtraOffer(s);
+    }, 1200);
   }
   function bSkipExtra()     { bRender(bApi.skip_extra_balls()); }
   function bFinishFG()      { bRender(bApi.finish_freegames()); }
   function bPlayDon(choice) {
+    bDonRetirePot = bState ? bState.pot : 0;
     const s = bApi.play_don(choice);
+    bState = s;
     document.getElementById('bp-don-pot').textContent   = s.pot.toFixed(2);
     document.getElementById('bp-don-round').textContent = s.donRounds;
-    if (s.phase === 'ROUND_OVER') { bRender(s); return; }
+    const drawnIsRed = s.wonDon ? (choice === 1) : (choice === 2);
+    const cardColor  = drawnIsRed ? '#e05252' : 'var(--purple)';
+    const cardSymbol = drawnIsRed ? '♥ RED' : '♠ BLUE';
     const flash = document.getElementById('bp-don-result');
-    flash.style.color = s.wonDon ? 'var(--green-light)' : '#e05252';
-    flash.textContent = s.wonDon ? 'Won! Pot → ' + s.pot.toFixed(2) + '€' : 'Lost! Pot gone.';
+    flash.innerHTML =
+      '<div style="display:inline-flex;align-items:center;gap:10px;margin-top:4px">' +
+        '<div style="border:.5px solid ' + cardColor + ';color:' + cardColor + ';padding:.3rem .7rem;' +
+             'font-family:\'Rajdhani\',sans-serif;font-size:.95rem;font-weight:700;border-radius:2px">' + cardSymbol + '</div>' +
+        '<span style="color:' + (s.wonDon ? 'var(--green-light)' : '#e05252') + ';font-size:12px">' +
+          (s.wonDon ? '✓ Won! Pot → ' + s.pot.toFixed(2) + '€' : '✗ Lost! Pot gone.') +
+        '</span>' +
+      '</div>';
+    document.querySelectorAll('#bp-don .b-don-card, #bp-don .b-btn.amber').forEach(el => {
+      el.style.pointerEvents = 'none'; el.style.opacity = '.4';
+    });
+    if (s.phase === 'ROUND_OVER') {
+      setTimeout(() => bRender(s), 1500);
+      return;
+    }
+    setTimeout(() => {
+      document.querySelectorAll('#bp-don .b-don-card, #bp-don .b-btn.amber').forEach(el => {
+        el.style.pointerEvents = ''; el.style.opacity = '';
+      });
+    }, 1000);
   }
   function bExitDon()  { bRender(bApi.exit_don()); }
   function bNewRound() {
+    bDonRetirePot = 0;
     bApi.save_game();
     bApi.reset_round();
     document.querySelectorAll('#bingo-panel .b-panel').forEach(p => p.classList.remove('active'));
